@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://obuntubedsidenursing.com/sitemap.xml

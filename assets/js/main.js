@@ -143,6 +143,14 @@
     ctaZones.forEach(function (z) { io2.observe(z); });
   }
 
+  /* ---------- Footer "Back to top": scroll up without leaving #top in the URL ---------- */
+  var toTop = $(".to-top");
+  if (toTop) toTop.addEventListener("click", function (e) {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+    if (e.detail === 0) { var skip = $(".skip"); if (skip) skip.focus({ preventScroll: true }); } // keyboard users land at the top of the page
+  });
+
   /* ---------- Scroll loop (single rAF-throttled handler) ---------- */
   var ticking = false;
   function onScroll() {

@@ -62,20 +62,45 @@
   var words = [];
   var lit = -1;
   if (statement) {
-    var raw = statement.textContent.trim().replace(/\s+/g, " ").split(" ");
-    statement.setAttribute("aria-label", raw.join(" "));
-    statement.innerHTML = raw.map(function (w) { return '<span class="w" aria-hidden="true">' + w + "</span>"; }).join(" ");
+    statement.setAttribute("aria-label", statement.textContent.trim().replace(/\s+/g, " "));
+    // wrap every word in a span, keeping inline markup (the serif <em> phrases) intact
+    var wrapWords = function (from, to) {
+      Array.prototype.forEach.call(from.childNodes, function (node) {
+        if (node.nodeType === 3) {
+          node.textContent.split(/(\s+)/).forEach(function (t) {
+            if (!t) return;
+            if (/^\s+$/.test(t)) { to.appendChild(document.createTextNode(" ")); return; }
+            var s = document.createElement("span");
+            s.className = "w"; s.setAttribute("aria-hidden", "true"); s.textContent = t;
+            to.appendChild(s);
+          });
+        } else if (node.nodeType === 1) {
+          var copy = node.cloneNode(false);
+          wrapWords(node, copy);
+          to.appendChild(copy);
+        }
+      });
+    };
+    var wrapped = document.createDocumentFragment();
+    wrapWords(statement, wrapped);
+    statement.textContent = "";
+    statement.appendChild(wrapped);
     words = $$(".w", statement);
   }
   function updateStatement() {
     if (!words.length) return;
-    if (reduceMotion) { if (lit !== words.length) { words.forEach(function (w) { w.classList.add("is-lit"); }); lit = words.length; } return; }
+    var rail = statement.parentNode;
+    if (reduceMotion) {
+      if (lit !== words.length) { words.forEach(function (w) { w.classList.add("is-lit"); }); lit = words.length; rail.style.setProperty("--p", 1); }
+      return;
+    }
     var r = statement.getBoundingClientRect(), vh = window.innerHeight;
     var p = clamp((0.85 * vh - r.top) / (0.25 * vh + r.height), 0, 1);
     var n = Math.round(p * words.length);
     if (n === lit) return;
     lit = n;
     words.forEach(function (w, i) { w.classList.toggle("is-lit", i < n); });
+    rail.style.setProperty("--p", (n / words.length).toFixed(3));
   }
 
   /* ---------- Hero: glass-chip pointer spring ---------- */
@@ -116,7 +141,7 @@
         next.classList.add("is-active"); next.removeAttribute("aria-hidden");
         cur = i;
         dots.forEach(function (d, k) {
-          d.classList.toggle("is-active", k === i); d.classList.toggle("is-done", k < i);
+          d.classList.toggle("is-active", k === i);
           if (k === i) d.setAttribute("aria-current", "true"); else d.removeAttribute("aria-current");
         });
       };
@@ -221,7 +246,8 @@
       return lines.join("\n");
     };
     if (emailLink) emailLink.addEventListener("click", function (e) {
-      if (!(checkName() & checkContact())) { e.preventDefault(); return; }
+      var nameOk = checkName(), contactOk = checkContact(); // run both so each field shows its own error
+      if (!(nameOk && contactOk)) { e.preventDefault(); return; }
       emailLink.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent("Care enquiry — " + nameEl.value.trim()) + "&body=" + encodeURIComponent(compose());
     });
     form.addEventListener("submit", function (e) {

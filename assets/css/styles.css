@@ -1,6 +1,6 @@
 /* ==========================================================================
-   Obuntu Bedside & Nursing Care — design system
-   Primary  #008080 (teal)   ·   Secondary #98FF98 (mint — accents only)
+   Obuntu Bedside & Nursing Care: design system
+   Primary  #008080 (teal)   ·   Secondary #98FF98 (mint, accents only)
    Principles: restraint, one idea per screen, response on press, springs/ease-out,
    translucent materials for chrome, size-specific tracking, reduced-motion aware.
    ========================================================================== */
@@ -225,11 +225,8 @@ p { text-wrap: pretty; }
 }
 .nav.is-scrolled .nav-pill { background: rgba(255, 255, 255, 0.93); box-shadow: 0 0 0 1px rgba(2, 47, 47, 0.08), 0 12px 36px -14px rgba(2, 47, 47, 0.28); }
 
-.brand { display: inline-flex; align-items: center; gap: 0.7rem; min-height: 44px; }
-.brand-mark { height: 34px; width: auto; }
-.brand-text { display: grid; line-height: 1.05; }
-.brand-text strong { font-size: 1.1875rem; font-weight: 650; letter-spacing: -0.035em; color: var(--teal-800); }
-.brand-text small { font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.01em; color: var(--ink-3); margin-top: 3px; }
+.brand { display: inline-flex; align-items: center; min-height: 44px; }
+.brand-logo { display: block; height: 46px; width: auto; }
 
 .nav-links { display: flex; align-items: center; gap: 2px; }
 .nav-links a { padding: 10px 16px; border-radius: 999px; font-size: 0.9375rem; font-weight: 500; color: var(--ink-2); transition: background-color 200ms ease, color 200ms ease; }
@@ -278,7 +275,7 @@ p { text-wrap: pretty; }
   .nav-links, .nav-cta { display: none; }
   .burger { display: block; }
 }
-@media (max-width: 380px) { .brand-text small { display: none; } }
+@media (max-width: 380px) { .brand-logo { height: 38px; } }
 
 /* ---------- Floating contact buttons: WhatsApp (all screens) + Call (phones) ---------- */
 .ic-fill { fill: currentColor; stroke: none; }
@@ -608,8 +605,7 @@ p { text-wrap: pretty; }
 .footer a { transition: color 200ms ease, transform 240ms var(--ease-out), background-color 200ms ease; }
 @media (hover: hover) and (pointer: fine) { .footer a:hover { color: #fff; } }
 .footer-grid { display: grid; grid-template-columns: 1.7fr 0.9fr 1.2fr 1.3fr; gap: clamp(32px, 4vw, 56px); }
-.footer .brand-text strong { color: #fff; }
-.footer .brand-text small { color: rgba(255, 255, 255, 0.55); }
+.footer .brand-logo { height: 52px; }
 .footer-about { display: grid; gap: 1.25rem; align-content: start; max-width: 26rem; }
 .footer-tag { font-size: 1.0625rem; line-height: 1.55; color: rgba(255, 255, 255, 0.82); max-width: 22rem; }
 .footer-where { display: flex; align-items: center; gap: 0.6rem; font-size: 0.9375rem; }
@@ -744,6 +740,34 @@ p { text-wrap: pretty; }
 .value p { color: var(--ink-2); font-size: 1rem; }
 @media (max-width: 860px) { .values { grid-template-columns: 1fr; } }
 
+/* Videos: a wide message beside a tall promo, sized to the same height. Poster + play button until played (main.js). */
+.watch { display: grid; grid-template-columns: minmax(0, 3.15fr) minmax(0, 1fr); gap: clamp(20px, 3vw, 40px); align-items: start; margin-top: clamp(32px, 5vw, 56px); }
+.vid { display: grid; gap: 14px; margin: 0; }
+.vid-frame { position: relative; isolation: isolate; border-radius: var(--r-xl); overflow: hidden; background: var(--teal-950); box-shadow: var(--shadow-md); }
+.vid-wide .vid-frame { aspect-ratio: 848 / 478; }
+.vid-tall .vid-frame { aspect-ratio: 9 / 16; }
+.vid video { display: block; width: 100%; height: 100%; object-fit: cover; background: var(--teal-950); }
+.vid-play {
+  position: absolute; inset: 0; z-index: 1; display: none; place-items: center; padding: 0; border: 0; cursor: pointer; color: var(--teal-800);
+  background: linear-gradient(180deg, rgba(1, 31, 31, 0) 50%, rgba(1, 31, 31, 0.42));
+}
+.js .vid-play { display: grid; }
+.vid.is-playing .vid-play { display: none; }
+.vid-play .ic {
+  box-sizing: content-box; width: 26px; height: 26px; padding: 22px 19px 22px 25px; border-radius: 50%; background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 36px -8px rgba(1, 31, 31, 0.6); transition: transform 240ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) { .vid-play:hover .ic { transform: scale(1.07); } }
+.vid-play:active .ic { transform: scale(0.95); }
+.vid-play:focus-visible { outline-offset: -6px; border-radius: var(--r-xl); }
+.vid figcaption { display: grid; gap: 2px; padding-inline: 4px; }
+.vid figcaption b { font-size: 1.0625rem; letter-spacing: -0.02em; }
+.vid figcaption span { color: var(--ink-3); font-size: 0.9375rem; }
+@media (max-width: 980px) {
+  .watch { grid-template-columns: 1fr; }
+  .vid-tall { width: min(100%, 22rem); justify-self: center; }
+}
+
 /* Contact */
 .contact { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: clamp(32px, 6vw, 96px); align-items: start; padding-bottom: var(--section-y); }
 .contact-info { display: grid; gap: 1.5rem; }
@@ -817,7 +841,7 @@ p { text-wrap: pretty; }
   .fab, .fab a { transition-duration: 0.01ms; }
   .js [data-reveal] { transform: none; transition: opacity 300ms ease; transition-delay: 0s; }
   .menu, .menu-links a { transform: none; }
-  .svc, .svc-img img, .btn, .faq-icon { transition-duration: 0.01ms; }
+  .svc, .svc-img img, .btn, .faq-icon, .vid-play .ic { transition-duration: 0.01ms; }
   .faq-a { transition: none; }
   ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 }

@@ -1,4 +1,4 @@
-/* Obuntu — interactions. Vanilla, no dependencies. Everything degrades gracefully without JS. */
+/* Obuntu interactions. Vanilla, no dependencies. Everything degrades gracefully without JS. */
 (function () {
   "use strict";
 
@@ -187,6 +187,24 @@
     });
   });
 
+  /* ---------- Videos: poster + big play button, native controls once playing, one video at a time ---------- */
+  var vids = $$(".vid video");
+  vids.forEach(function (v) {
+    var box = v.closest(".vid"), btn = $(".vid-play", box);
+    if (!btn) return;
+    v.controls = false; // the big button is the control until first play; without JS the native controls stay
+    btn.addEventListener("click", function () {
+      var p = v.play();
+      if (p && p.catch) p.catch(function () { v.controls = true; });
+    });
+    v.addEventListener("play", function () {
+      var hadFocus = document.activeElement === btn; // keep keyboard focus from falling to <body> when the button goes away
+      v.controls = true; box.classList.add("is-playing");
+      if (hadFocus) v.focus({ preventScroll: true });
+      vids.forEach(function (o) { if (o !== v) o.pause(); });
+    });
+  });
+
   /* ---------- Floating contact buttons: always on, except they step aside once the footer is in view ---------- */
   var fab = $("[data-fab]"), footerEl = $(".footer");
   if (fab && footerEl && "IntersectionObserver" in window) {
@@ -248,7 +266,7 @@
     if (emailLink) emailLink.addEventListener("click", function (e) {
       var nameOk = checkName(), contactOk = checkContact(); // run both so each field shows its own error
       if (!(nameOk && contactOk)) { e.preventDefault(); return; }
-      emailLink.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent("Care enquiry — " + nameEl.value.trim()) + "&body=" + encodeURIComponent(compose());
+      emailLink.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent("Care enquiry: " + nameEl.value.trim()) + "&body=" + encodeURIComponent(compose());
     });
     form.addEventListener("submit", function (e) {
       e.preventDefault();

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://obuntubedsidenursing.com/sitemap.xml
+Sitemap: https://balukuu.github.io/Obuntu/sitemap.xml

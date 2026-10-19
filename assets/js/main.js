@@ -131,14 +131,14 @@
     });
   });
 
-  /* ---------- Mobile action bar: step aside when a CTA is on screen ---------- */
-  var bar = $("[data-actionbar]");
+  /* ---------- Mobile action bar + floating WhatsApp button: step aside when a CTA is on screen ---------- */
+  var bars = $$("[data-actionbar], [data-wa-float]");
   var ctaZones = $$(".final, .footer, [data-hide-actionbar]");
-  if (bar && ctaZones.length && "IntersectionObserver" in window) {
+  if (bars.length && ctaZones.length && "IntersectionObserver" in window) {
     var visible = new Set();
     var io2 = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) { if (en.isIntersecting) visible.add(en.target); else visible.delete(en.target); });
-      bar.classList.toggle("is-hidden", visible.size > 0);
+      bars.forEach(function (b) { b.classList.toggle("is-hidden", visible.size > 0); });
     }, { threshold: 0.2 });
     ctaZones.forEach(function (z) { io2.observe(z); });
   }

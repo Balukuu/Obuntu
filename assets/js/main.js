@@ -78,16 +78,8 @@
     words.forEach(function (w, i) { w.classList.toggle("is-lit", i < n); });
   }
 
-  /* ---------- Hero: image parallax + glass-chip pointer spring ---------- */
-  var heroImg = $("[data-parallax]");
+  /* ---------- Hero: glass-chip pointer spring ---------- */
   var chips = $$("[data-chip]");
-  function updateParallax() {
-    if (!heroImg || reduceMotion) return;
-    var r = heroImg.parentElement.getBoundingClientRect(), vh = window.innerHeight;
-    if (r.bottom < 0 || r.top > vh) return;
-    var prog = clamp((vh - r.top) / (vh + r.height), 0, 1) - 0.5;
-    heroImg.style.transform = "translate3d(0," + (prog * -36).toFixed(1) + "px,0) scale(1.08)";
-  }
   if (chips.length && finePointer && !reduceMotion) {
     var hero = $(".hero"), tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
     var tick = function () {
@@ -104,6 +96,45 @@
       if (!raf) raf = requestAnimationFrame(tick);
     });
     hero.addEventListener("pointerleave", function () { tx = 0; ty = 0; if (!raf) raf = requestAnimationFrame(tick); });
+  }
+
+  /* ---------- Hero photo slideshow: the active progress bar's CSS animation drives the timing, so pausing is pure CSS ---------- */
+  var heroCard = $(".hero-card");
+  var slides = heroCard ? $$(".slide", heroCard) : [];
+  if (slides.length > 1) {
+    var dots = $$(".hero-dot", heroCard), cur = 0;
+    // The other photos are lazy in the HTML so they don't compete with the first one; once the page is loaded, fetch them
+    // ourselves rather than waiting on the browser's lazy-load heuristics, so the show can't stall on an unloaded slide.
+    var preload = function () { slides.forEach(function (s) { s.loading = "eager"; }); };
+    if (document.readyState === "complete") preload(); else window.addEventListener("load", preload);
+    var show = function (i) {
+      i = (i + slides.length) % slides.length;
+      if (i === cur) return;
+      var next = slides[i];
+      var go = function () {
+        slides[cur].classList.remove("is-active"); slides[cur].setAttribute("aria-hidden", "true");
+        next.classList.add("is-active"); next.removeAttribute("aria-hidden");
+        cur = i;
+        dots.forEach(function (d, k) {
+          d.classList.toggle("is-active", k === i); d.classList.toggle("is-done", k < i);
+          if (k === i) d.setAttribute("aria-current", "true"); else d.removeAttribute("aria-current");
+        });
+      };
+      if (next.complete) go(); else next.addEventListener("load", go, { once: true }); // lazy photo not in yet: wait for it
+    };
+    heroCard.addEventListener("animationend", function (e) { if (e.animationName === "heroFill") show(cur + 1); });
+    dots.forEach(function (d, k) { d.addEventListener("click", function () { show(k); }); });
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (en) { heroCard.classList.toggle("is-paused", !en[0].isIntersecting); }, { threshold: 0.25 }).observe(heroCard);
+    }
+    var sx = 0, sy = 0, sid = -1; // swipe on touch
+    heroCard.addEventListener("pointerdown", function (e) { if (e.pointerType !== "mouse") { sx = e.clientX; sy = e.clientY; sid = e.pointerId; } });
+    heroCard.addEventListener("pointerup", function (e) {
+      if (e.pointerId !== sid) return;
+      sid = -1;
+      var dx = e.clientX - sx, dy = e.clientY - sy;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) show(cur + (dx < 0 ? 1 : -1));
+    });
   }
 
   /* ---------- Process timeline: progress line + active steps ---------- */
@@ -131,16 +162,10 @@
     });
   });
 
-  /* ---------- Mobile action bar + floating WhatsApp button: step aside when a CTA is on screen ---------- */
-  var bars = $$("[data-actionbar], [data-wa-float]");
-  var ctaZones = $$(".final, .footer, [data-hide-actionbar]");
-  if (bars.length && ctaZones.length && "IntersectionObserver" in window) {
-    var visible = new Set();
-    var io2 = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) { if (en.isIntersecting) visible.add(en.target); else visible.delete(en.target); });
-      bars.forEach(function (b) { b.classList.toggle("is-hidden", visible.size > 0); });
-    }, { threshold: 0.2 });
-    ctaZones.forEach(function (z) { io2.observe(z); });
+  /* ---------- Floating contact buttons: always on, except they step aside once the footer is in view ---------- */
+  var fab = $("[data-fab]"), footerEl = $(".footer");
+  if (fab && footerEl && "IntersectionObserver" in window) {
+    new IntersectionObserver(function (en) { fab.classList.toggle("is-hidden", en[0].isIntersecting); }).observe(footerEl);
   }
 
   /* ---------- Footer "Back to top": scroll up without leaving #top in the URL ---------- */
@@ -156,7 +181,7 @@
   function onScroll() {
     if (ticking) return;
     ticking = true;
-    requestAnimationFrame(function () { onScrollNav(); updateStatement(); updateParallax(); updateTimeline(); ticking = false; });
+    requestAnimationFrame(function () { onScrollNav(); updateStatement(); updateTimeline(); ticking = false; });
   }
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll);
